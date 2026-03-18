@@ -230,8 +230,9 @@ export default function App() {
     setLoginError('')
     setLoginLoading(true)
 
-    // Clear stale local session without network call — prevents hang on stale token
-    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+    // Directly wipe Supabase storage key to bypass internal auth lock
+    // The lock gets stuck when getSession() is still pending a stale token refresh
+    try { localStorage.removeItem('sb-owllakjxcihfjrwcwnbh-auth-token') } catch { /* ignore */ }
 
     const attemptLogin = (timeoutMs: number) =>
       Promise.race([
