@@ -120,18 +120,32 @@ export default function App() {
   // ── Auth bootstrap ──────────────────────────────────────
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const p = await getProfile(session.user.id)
-        setProfile(p)
-      }
-      setAuthLoading(false)
-    })
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (session?.user) {
+          try {
+            const p = await getProfile(session.user.id)
+            setProfile(p)
+          } catch {
+            // Profile fetch failed — fall through to show login
+          }
+        }
+      })
+      .catch(() => {
+        // getSession failed — fall through to show login
+      })
+      .finally(() => {
+        setAuthLoading(false)
+      })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const p = await getProfile(session.user.id)
-        setProfile(p)
+        try {
+          const p = await getProfile(session.user.id)
+          setProfile(p)
+        } catch {
+          setProfile(null)
+        }
       } else {
         setProfile(null)
         setClients([])
