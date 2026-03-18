@@ -263,7 +263,7 @@ export default function App() {
     return (
       <div className="login-shell">
         <div className="login-card">
-          <div className="eyebrow">Broker CRM</div>
+          <div className="eyebrow">R Fernandez Services</div>
           <p className="supporting-text">Loading...</p>
         </div>
       </div>
@@ -274,7 +274,7 @@ export default function App() {
     return (
       <div className="login-shell">
         <div className="login-card">
-          <div className="eyebrow">Broker CRM</div>
+          <div className="eyebrow">R Fernandez Services</div>
           <h1>Secure client records</h1>
           <p className="supporting-text">Sign in to access your broker files.</p>
 
@@ -323,8 +323,8 @@ export default function App() {
       <aside className="sidebar">
         <div>
           <div className="brand-mark">CRM</div>
-          <h2>Broker Client Vault</h2>
-          <p className="sidebar-caption">Secure broker records</p>
+          <h2>R Fernandez Services</h2>
+          <p className="sidebar-caption">Secure client records</p>
         </div>
 
         <div className="sidebar-user">
