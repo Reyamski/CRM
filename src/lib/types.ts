@@ -7,11 +7,21 @@ export type MaritalStatus =
   | 'Divorced'
   | 'Separated'
   | 'Widowed'
+export type MortgageType =
+  | 'Purchase'
+  | 'Refinance'
+  | 'Renewal'
+  | 'HELOC'
+  | 'Bridge'
+  | 'Construction'
+  | 'Other'
 
 export interface Profile {
   id: string
   name: string
   role: UserRole
+  email: string | null
+  is_active: boolean
   created_at: string
 }
 
@@ -27,15 +37,21 @@ export interface Client {
   spouse_name: string | null
   file_location: string | null
   status: ClientStatus
+  // Mortgage fields
+  mortgage_type: MortgageType | null
+  lender: string | null
+  property_address: string | null
+  loan_amount: number | null
+  rate_expiry_date: string | null
+  referral_source: string | null
+  // Metadata
   created_by: string | null
   created_by_name: string | null
   last_modified_by: string | null
   last_modified_by_name: string | null
   created_at: string
   updated_at: string
-  // joined from client_sensitive (only for authorized roles)
   sin_full?: string | null
-  // joined from client_notes
   notes?: ClientNote[]
 }
 
@@ -69,4 +85,10 @@ export type ClientDraft = {
   spouse_name: string
   file_location: string
   status: ClientStatus
+  mortgage_type: MortgageType | ''
+  lender: string
+  property_address: string
+  loan_amount: string
+  rate_expiry_date: string
+  referral_source: string
 }
