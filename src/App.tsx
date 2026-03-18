@@ -295,11 +295,21 @@ export default function App() {
 
   // ── Loading / Auth screens ────────────────────────────────
 
+  const LogoBlock = () => (
+    <div className="login-logo">
+      <div className="login-logo-mark">RF</div>
+      <div>
+        <div className="login-logo-name">R Fernandez Services</div>
+        <div className="login-logo-sub">Client Management Portal</div>
+      </div>
+    </div>
+  )
+
   if (authLoading) {
     return (
       <div className="login-shell">
         <div className="login-card">
-          <div className="eyebrow">R Fernandez Services</div>
+          <LogoBlock />
           <p className="supporting-text">Loading...</p>
         </div>
       </div>
@@ -310,9 +320,9 @@ export default function App() {
     return (
       <div className="login-shell">
         <div className="login-card">
-          <div className="eyebrow">R Fernandez Services</div>
-          <h1>Secure client records</h1>
-          <p className="supporting-text">Sign in to access your broker files.</p>
+          <LogoBlock />
+          <h1>Welcome back</h1>
+          <p className="supporting-text">Sign in to access your client files.</p>
 
           <form onSubmit={handleLogin} className="login-form">
             <label>
@@ -357,10 +367,12 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div>
-          <div className="brand-mark">CRM</div>
-          <h2>R Fernandez Services</h2>
-          <p className="sidebar-caption">Secure client records</p>
+        <div className="sidebar-brand">
+          <div className="brand-mark">RF</div>
+          <div>
+            <div className="brand-name">R Fernandez Services</div>
+            <div className="brand-type">Client Portal</div>
+          </div>
         </div>
 
         <div className="sidebar-user">
@@ -368,6 +380,7 @@ export default function App() {
           <div className="sidebar-user-role">{profile.role}</div>
         </div>
 
+        <div className="sidebar-section-label">Navigation</div>
         <nav className="sidebar-nav">
           <button
             className={activeView === 'dashboard' ? 'nav-button active' : 'nav-button'}
@@ -400,12 +413,15 @@ export default function App() {
       <main className="main-shell">
         <header className="topbar">
           <div>
+            <div className="eyebrow">
+              {activeView === 'dashboard' ? 'Overview' : activeView === 'clients' ? 'Records' : 'Compliance'}
+            </div>
             <h1>
               {activeView === 'dashboard'
-                ? 'Operational dashboard'
+                ? 'Dashboard'
                 : activeView === 'clients'
-                  ? 'Client management'
-                  : 'Audit and activity'}
+                  ? 'Client Management'
+                  : 'Audit Log'}
             </h1>
           </div>
           <div className="topbar-actions">
@@ -423,6 +439,7 @@ export default function App() {
           </div>
         </header>
 
+        <div className="content-area">
         {dataLoading && (
           <div className="empty-panel">Loading...</div>
         )}
@@ -652,6 +669,7 @@ export default function App() {
             )}
           </section>
         )}
+        </div>
       </main>
 
       {showClientForm && (
