@@ -55,5 +55,5 @@
   - clearer privacy/compliance messaging in the UI
 
 ## Run Context
-- Project path: `c:\Users\cruzr\Downloads\Cursor\CRM`
+- Project path: `c:\Users\Reyam\Downloads\AI\crm-app`
 - Current local dev URL during this session: `http://localhost:5173/`

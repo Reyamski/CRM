@@ -24,3 +24,4 @@ broker-crm-prototype
 *.njsproj
 *.sln
 *.sw?
+.env
