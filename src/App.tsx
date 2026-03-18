@@ -120,6 +120,12 @@ export default function App() {
   // ── Auth bootstrap ──────────────────────────────────────
 
   useEffect(() => {
+    // Timeout fallback — if Supabase hangs (cold start / stale session), show login after 5s
+    const timeout = setTimeout(() => {
+      setAuthLoading(false)
+      supabase.auth.signOut().catch(() => {})
+    }, 5000)
+
     supabase.auth.getSession()
       .then(async ({ data: { session } }) => {
         if (session?.user) {
@@ -131,10 +137,9 @@ export default function App() {
           }
         }
       })
-      .catch(() => {
-        // getSession failed — fall through to show login
-      })
+      .catch(() => {})
       .finally(() => {
+        clearTimeout(timeout)
         setAuthLoading(false)
       })
 
