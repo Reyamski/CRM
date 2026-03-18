@@ -230,6 +230,10 @@ export default function App() {
     setLoginError('')
     setLoginLoading(true)
 
+    // Clear any stale session from localStorage before attempting login
+    // This is what causes regular browser to hang vs incognito (no stale token)
+    await supabase.auth.signOut().catch(() => {})
+
     const attemptLogin = (timeoutMs: number) =>
       Promise.race([
         supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword }),
