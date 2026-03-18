@@ -25,3 +25,5 @@ broker-crm-prototype
 *.sln
 *.sw?
 .env
+
+.vercel

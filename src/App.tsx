@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import './App.css'
 import { supabase } from './lib/supabase'
 import {
@@ -21,6 +21,10 @@ import type {
   ClientStatus,
   MaritalStatus,
 } from './lib/types'
+
+// ── Constants ─────────────────────────────────────────────
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
+const SIN_FORMAT = /^\d{3}-?\d{3}-?\d{3}$/ // 123-456-789 or 123456789
 
 // ── Helpers ───────────────────────────────────────────────
 
@@ -77,6 +81,7 @@ export default function App() {
   const [draft, setDraft] = useState<ClientDraft>(emptyDraft())
   const [newNote, setNewNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const canRevealSin =
     profile?.role === 'Broker / Owner' || profile?.role === 'Manager / Compliance'
@@ -84,6 +89,33 @@ export default function App() {
     profile?.role === 'Broker / Owner' || profile?.role === 'Manager / Compliance'
 
   const selectedClient = clients.find((c) => c.id === selectedClientId) ?? null
+
+  // ── Idle session timeout ─────────────────────────────────
+
+  const resetIdleTimer = useCallback(() => {
+    if (idleTimer.current) clearTimeout(idleTimer.current)
+    if (!profile) return
+    idleTimer.current = setTimeout(() => {
+      supabase.auth.signOut()
+    }, IDLE_TIMEOUT_MS)
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile) return
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll']
+    events.forEach((e) => window.addEventListener(e, resetIdleTimer))
+    resetIdleTimer()
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetIdleTimer))
+      if (idleTimer.current) clearTimeout(idleTimer.current)
+    }
+  }, [profile, resetIdleTimer])
+
+  // ── Clear revealed SIN when switching clients ────────────
+
+  useEffect(() => {
+    setRevealedSins({})
+  }, [selectedClientId])
 
   // ── Auth bootstrap ──────────────────────────────────────
 
@@ -192,6 +224,10 @@ export default function App() {
 
   const handleSaveClient = async () => {
     if (!profile) return
+    if (draft.sin_full && !SIN_FORMAT.test(draft.sin_full.trim())) {
+      alert('Invalid SIN format. Must be 9 digits (e.g. 123-456-789).')
+      return
+    }
     setSaving(true)
     try {
       if (editingClientId) {
@@ -208,8 +244,8 @@ export default function App() {
       setShowClientForm(false)
       setEditingClientId(null)
       setDraft(emptyDraft())
-    } catch (err) {
-      console.error('Save client error:', err)
+    } catch (_err) {
+      alert('Failed to save client. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -558,6 +594,7 @@ export default function App() {
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
                       placeholder="Add a follow-up, compliance reminder, or file note..."
+                      maxLength={2000}
                     />
                     <div className="notes-actions">
                       <button className="primary-button" onClick={handleAddNote} disabled={!newNote.trim()}>
@@ -633,7 +670,7 @@ export default function App() {
             <div className="form-grid">
               <label>
                 Full name
-                <input value={draft.full_name} onChange={(e) => setDraft({ ...draft, full_name: e.target.value })} />
+                <input value={draft.full_name} onChange={(e) => setDraft({ ...draft, full_name: e.target.value })} maxLength={100} />
               </label>
               <label>
                 Date of birth
@@ -644,17 +681,19 @@ export default function App() {
                 <input
                   value={draft.sin_full}
                   onChange={(e) => setDraft({ ...draft, sin_full: e.target.value })}
-                  placeholder="Optional — stored securely"
+                  placeholder="123-456-789 — stored securely"
                   autoComplete="off"
+                  maxLength={11}
+                  inputMode="numeric"
                 />
               </label>
               <label>
                 Phone
-                <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} />
+                <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} maxLength={20} />
               </label>
               <label>
                 Email
-                <input value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} />
+                <input type="email" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} maxLength={100} />
               </label>
               <label>
                 Status
@@ -682,11 +721,11 @@ export default function App() {
               </label>
               <label className="form-span-2">
                 Address
-                <input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
+                <input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} maxLength={200} />
               </label>
               <label className="form-span-2">
                 File location
-                <input value={draft.file_location} onChange={(e) => setDraft({ ...draft, file_location: e.target.value })} />
+                <input value={draft.file_location} onChange={(e) => setDraft({ ...draft, file_location: e.target.value })} maxLength={200} />
               </label>
             </div>
 
