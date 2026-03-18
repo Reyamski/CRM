@@ -124,7 +124,7 @@ export default function App() {
     const timeout = setTimeout(() => {
       setAuthLoading(false)
       supabase.auth.signOut().catch(() => {})
-    }, 5000)
+    }, 8000)
 
     supabase.auth.getSession()
       .then(async ({ data: { session } }) => {
@@ -229,14 +229,31 @@ export default function App() {
     e.preventDefault()
     setLoginError('')
     setLoginLoading(true)
-    try {
-      const result = await Promise.race([
+
+    const attemptLogin = (timeoutMs: number) =>
+      Promise.race([
         supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Connection timed out. Please try again.')), 10000)),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs),
+        ),
       ])
+
+    try {
+      let result
+      try {
+        result = await attemptLogin(10000)
+      } catch (firstErr: unknown) {
+        if (firstErr instanceof Error && firstErr.message === 'TIMEOUT') {
+          setLoginError('Server is waking up, retrying...')
+          result = await attemptLogin(15000)
+        } else {
+          throw firstErr
+        }
+      }
       if (result.error) setLoginError(result.error.message)
+      else setLoginError('')
     } catch (err: unknown) {
-      setLoginError(err instanceof Error ? err.message : 'Connection timed out. Please try again.')
+      setLoginError('Connection timed out. Please try again.')
     } finally {
       setLoginLoading(false)
     }

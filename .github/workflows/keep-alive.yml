@@ -21,3 +21,12 @@ jobs:
             exit 1
           fi
           echo "OK"
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://owllakjxcihfjrwcwnbh.supabase.co/auth/v1/health" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93bGxha2p4Y2loZmpyd2N3bmJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTUwNDIsImV4cCI6MjA4OTQzMTA0Mn0.F8J0X6IRtZgfmULPJy2J5viKC6FeL6B7QpSzbc2rqe0")
+          echo "Supabase auth ping status: $AUTH_STATUS"
+          if [ "$AUTH_STATUS" != "200" ]; then
+            echo "Auth endpoint unexpected status $AUTH_STATUS"
+            exit 1
+          fi
+          echo "Auth OK"
