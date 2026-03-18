@@ -8,6 +8,7 @@ import {
   getSinFull,
   getAuditLog,
   getTeamMembers,
+  getDbStats,
   createClient as dbCreateClient,
   updateClient as dbUpdateClient,
   addNote as dbAddNote,
@@ -24,6 +25,7 @@ import type {
   ClientStatus,
   MaritalStatus,
   MortgageType,
+  DbStats,
 } from './lib/types'
 
 // ── Constants ─────────────────────────────────────────────
@@ -85,6 +87,7 @@ export default function App() {
   const [notes, setNotes] = useState<ClientNote[]>([])
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([])
   const [dataLoading, setDataLoading] = useState(false)
+  const [dbStats, setDbStats] = useState<DbStats | null>(null)
 
   // Team management
   const [teamMembers, setTeamMembers] = useState<Profile[]>([])
@@ -201,6 +204,7 @@ export default function App() {
 
   useEffect(() => {
     if (activeView === 'audit' && canViewAudit) getAuditLog().then(setAuditLog)
+    if (activeView === 'dashboard') getDbStats().then(setDbStats)
   }, [activeView, canViewAudit])
 
   useEffect(() => {
@@ -616,6 +620,7 @@ export default function App() {
               <StatCard label="Pending files" value={String(dashboardStats.pendingCount)} detail="Waiting on signatures or follow-up" />
               <StatCard label="Archived" value={String(dashboardStats.archivedCount)} detail="Soft-deleted or archived records" />
               <StatCard label="Mortgage book" value={formatCurrency(dashboardStats.totalLoan)} detail="Sum of all loan amounts on file" />
+              <DbUsageCard stats={dbStats} />
 
               <section className="panel panel-span-2">
                 <div className="panel-header">
@@ -1033,6 +1038,34 @@ function StatCard({ label, value, detail }: { label: string; value: string; deta
 
 function StatusBadge({ status }: { status: ClientStatus }) {
   return <span className={`status-badge status-${status.toLowerCase()}`}>{status}</span>
+}
+
+const FREE_TIER_BYTES = 500 * 1024 * 1024 // 500 MB
+
+function DbUsageCard({ stats }: { stats: DbStats | null }) {
+  const used = stats?.db_size_bytes ?? 0
+  const pct = Math.min((used / FREE_TIER_BYTES) * 100, 100)
+  const color = pct >= 85 ? '#ef4444' : pct >= 60 ? '#f59e0b' : '#10b981'
+
+  return (
+    <section className="panel stat-card db-usage-card">
+      <div className="eyebrow">Database (Supabase free)</div>
+      {stats ? (
+        <>
+          <div className="stat-value" style={{ fontSize: 22 }}>{stats.db_size_pretty}</div>
+          <div className="db-usage-bar-track">
+            <div className="db-usage-bar-fill" style={{ width: `${pct}%`, background: color }} />
+          </div>
+          <div className="db-usage-meta">
+            <span style={{ color }}>{pct.toFixed(1)}% of 500 MB used</span>
+            <span>{stats.client_count} clients · {stats.note_count} notes · {stats.audit_count} audit entries</span>
+          </div>
+        </>
+      ) : (
+        <div className="muted-text" style={{ fontSize: 13 }}>Loading...</div>
+      )}
+    </section>
+  )
 }
 
 function DetailItem({ label, value, action }: { label: string; value: string; action?: ReactNode }) {

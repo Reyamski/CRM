@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Client, ClientDraft, ClientNote, AuditEntry, Profile } from './types'
+import type { Client, ClientDraft, ClientNote, AuditEntry, Profile, DbStats } from './types'
 
 // ── Profile ───────────────────────────────────────────────
 
@@ -26,6 +26,12 @@ export async function getTeamMembers(): Promise<Profile[]> {
 export async function updateDisplayName(name: string): Promise<void> {
   const { error } = await supabase.rpc('update_display_name', { new_name: name })
   if (error) throw error
+}
+
+export async function getDbStats(): Promise<DbStats | null> {
+  const { data, error } = await supabase.rpc('get_db_stats').single()
+  if (error) return null
+  return data as DbStats
 }
 
 export async function setMemberActive(userId: string, isActive: boolean): Promise<void> {

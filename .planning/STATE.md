@@ -1,59 +1,48 @@
 # State
 
 ## Current Milestone
-- `v0.1`
+- `v0.2` — Live with Supabase + Vercel
 
 ## Current Focus
-- The clickable CRM prototype already exists and is testable.
-- The project is now being wrapped in a GSD-compatible planning structure so future work follows the AI-team workflow.
-- User confirmed the prototype "looks good".
-- User asked about database/deployment expectations and budget realities.
-- Decision: keep the current frontend-only prototype, but wrap it in the AI-team / GSD workflow instead of discarding it.
+Feature branch `feature/richer-records-and-user-mgmt` — built, committed, pushed. **NOT yet merged to develop/main.**
+Awaiting QA testing on local dev before merge.
 
-## What Exists
-- React + TypeScript Vite prototype
-- Demo users by role
-- Dashboard
-- Client list and detail view
-- Add/edit client modal
-- Notes flow
-- Masked SIN reveal behavior
-- Audit log page
+## What Exists (as of 2026-03-19)
+
+### Deployed (main → crm-app-rho-lovat.vercel.app)
+- Real Supabase auth (no localStorage)
+- Row Level Security (RLS) with role-based access
+- Clients: full_name, DOB, SIN (masked/reveal), address, email, phone, marital status, file location
+- Timestamped notes per client
+- Audit log (Broker/Owner + Manager/Compliance only)
+- SIN stored in separate `client_sensitive` table, reveal is audited
+- Dark navy + gold professional UI — "R Fernandez Services" branding
+- 30-min idle session timeout
+- Security headers via vercel.json
+- QA branch (develop) with Vercel preview env
+
+### On feature branch (needs QA before prod)
+- **Option 2 — Richer client records:** mortgage_type, lender, property_address, loan_amount, rate_expiry_date, referral_source
+- **Option 3 — User management:** forgot password flow, password reset via email link, "My Profile" view (change name + password), Team view (deactivate/reactivate members, send reset email)
+- DB migration required: `supabase/migration-v2.sql`
+- Dashboard now shows total mortgage book value
 
 ## Key Decisions
-- Keep the current prototype instead of discarding it.
-- Treat the current prototype as completed Phase 01.
-- Do not implement real backend/security yet until prototype feedback is gathered.
-- Continue using fake/demo data only.
-- Use the current prototype as a demo/testing artifact only, not as production code.
-- The next meaningful work should happen through GSD phases rather than ad hoc edits.
-- User is budget-conscious; a true secure production CRM is expected to cost more than a very small prototype budget.
+- Supabase (PostgreSQL + Auth + RLS) for all persistence — no localStorage
+- Deployed on Vercel free tier via CLI (not GitHub integration — papspective@gmail.com not in Reyamski's Vercel team)
+- Two Vercel projects: old `crm` (crm-beta-flame, dead) and current `crm-app` (crm-app-rho-lovat)
+- SECURITY DEFINER RPCs for profile updates (bypasses RLS safely)
+- Users created manually in Supabase dashboard (trigger copies metadata to profiles)
 
-## Known Gaps
-- No real auth
-- No backend
-- No persistence
-- No encryption
-- No true RBAC enforcement beyond frontend demo behavior
-- No real audit/event pipeline
-- No database yet; all current data is local in frontend state only.
-- No deployment packaging beyond normal Vite local dev/build.
-
-## Next Recommended Workflow
-1. Review the current prototype with stakeholders.
-2. Capture UI/product feedback.
-3. Run discuss/plan flow for Phase 02.
-4. Only after prototype signoff, move to production foundation phases.
-
-## Current Recommended Next Phase
-- `Phase 02 - Prototype Refinement`
-- Candidate scope:
-  - broker branding polish
-  - better form validation UX
-  - more realistic workflow states
-  - stronger mobile responsiveness
-  - clearer privacy/compliance messaging in the UI
+## Next Steps
+1. Run `supabase/migration-v2.sql` in Supabase SQL Editor (required before testing feature branch)
+2. Test feature branch locally: `npm run dev` on `feature/richer-records-and-user-mgmt`
+3. QA: test all new fields, forgot password flow, team management
+4. Merge: feature → develop (preview) → main (prod)
+5. Deploy to prod: `npx vercel --prod --yes`
 
 ## Run Context
 - Project path: `c:\Users\Reyam\Downloads\AI\crm-app`
-- Current local dev URL during this session: `http://localhost:5173/`
+- Local dev: `npm run dev` → http://localhost:5173/
+- Prod URL: https://crm-app-rho-lovat.vercel.app
+- Active branch: `feature/richer-records-and-user-mgmt`

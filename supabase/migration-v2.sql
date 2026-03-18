@@ -77,6 +77,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- ── RPC: DB usage stats for dashboard widget ──
+
+CREATE OR REPLACE FUNCTION get_db_stats()
+RETURNS TABLE (
+  db_size_bytes  BIGINT,
+  db_size_pretty TEXT,
+  client_count   BIGINT,
+  note_count     BIGINT,
+  audit_count    BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY SELECT
+    pg_database_size(current_database())::BIGINT,
+    pg_size_pretty(pg_database_size(current_database())),
+    (SELECT COUNT(*) FROM clients)::BIGINT,
+    (SELECT COUNT(*) FROM client_notes)::BIGINT,
+    (SELECT COUNT(*) FROM audit_log)::BIGINT;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ── Verify ──
 SELECT tablename, policyname, cmd FROM pg_policies
 WHERE schemaname = 'public' ORDER BY tablename, cmd;

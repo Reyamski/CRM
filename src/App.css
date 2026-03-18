@@ -425,6 +425,33 @@
   gap: 16px;
 }
 
+.db-usage-card {
+  grid-column: span 2;
+  gap: 10px;
+}
+
+.db-usage-bar-track {
+  height: 6px;
+  background: var(--bg-overlay);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.db-usage-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.db-usage-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .stat-card {
   display: flex;
   flex-direction: column;

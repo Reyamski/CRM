@@ -74,6 +74,14 @@ export interface AuditEntry {
   created_at: string
 }
 
+export interface DbStats {
+  db_size_bytes: number
+  db_size_pretty: string
+  client_count: number
+  note_count: number
+  audit_count: number
+}
+
 export type ClientDraft = {
   full_name: string
   date_of_birth: string
