@@ -214,13 +214,13 @@ export default function App() {
 
   const duplicateCandidates = useMemo(() => {
     if (!selectedClient) return []
-    return clients.filter(
-      (c) =>
-        c.id !== selectedClient.id &&
-        (c.full_name === selectedClient.full_name ||
-          c.email === selectedClient.email ||
-          c.phone === selectedClient.phone),
-    )
+    return clients.filter((c) => {
+      if (c.id === selectedClient.id) return false
+      const nameMatch = c.full_name === selectedClient.full_name
+      const emailMatch = !!selectedClient.email && !!c.email && c.email === selectedClient.email
+      const phoneMatch = !!selectedClient.phone && !!c.phone && c.phone === selectedClient.phone
+      return nameMatch || emailMatch || phoneMatch
+    })
   }, [clients, selectedClient])
 
   // ── Handlers ─────────────────────────────────────────────
