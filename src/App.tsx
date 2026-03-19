@@ -264,7 +264,9 @@ export default function App() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    try { localStorage.removeItem('sb-owllakjxcihfjrwcwnbh-auth-token') } catch { /* ignore */ }
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+    window.location.reload()
   }
 
   const handleSaveClient = async () => {
