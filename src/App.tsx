@@ -49,6 +49,7 @@ function emptyDraft(): ClientDraft {
     marital_status: 'Single',
     spouse_name: '',
     file_location: '',
+    client_year: '',
     status: 'Pending',
   }
 }
@@ -329,6 +330,7 @@ export default function App() {
       marital_status: client.marital_status ?? 'Single',
       spouse_name: client.spouse_name ?? '',
       file_location: client.file_location ?? '',
+      client_year: client.client_year ?? '',
       status: client.status,
     })
     setShowClientForm(true)
@@ -623,6 +625,7 @@ export default function App() {
                       <DetailItem label="Spouse" value={selectedClient.spouse_name ?? 'Not entered'} />
                     )}
                     <DetailItem label="File location" value={selectedClient.file_location ?? '—'} />
+                    <DetailItem label="Client year" value={selectedClient.client_year ?? '—'} />
                     <DetailItem
                       label="SIN"
                       value={revealedSins[selectedClient.id] ?? selectedClient.sin_masked}
@@ -791,6 +794,10 @@ export default function App() {
               <label className="form-span-2">
                 File location
                 <input value={draft.file_location} onChange={(e) => setDraft({ ...draft, file_location: e.target.value })} maxLength={200} />
+              </label>
+              <label>
+                Client year
+                <input value={draft.client_year} onChange={(e) => setDraft({ ...draft, client_year: e.target.value })} maxLength={10} placeholder="e.g. 2026" />
               </label>
             </div>
 

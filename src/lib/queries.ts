@@ -68,6 +68,7 @@ export async function createClient(
           ? draft.spouse_name || null
           : null,
       file_location: draft.file_location || null,
+      client_year: draft.client_year || null,
       status: draft.status,
       created_by: userId,
       created_by_name: userName,
@@ -115,6 +116,7 @@ export async function updateClient(
           ? draft.spouse_name || null
           : null,
       file_location: draft.file_location || null,
+      client_year: draft.client_year || null,
       status: draft.status,
       last_modified_by: userId,
       last_modified_by_name: userName,

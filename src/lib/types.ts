@@ -26,6 +26,7 @@ export interface Client {
   marital_status: MaritalStatus | null
   spouse_name: string | null
   file_location: string | null
+  client_year: string | null
   status: ClientStatus
   created_by: string | null
   created_by_name: string | null
@@ -68,5 +69,6 @@ export type ClientDraft = {
   marital_status: MaritalStatus
   spouse_name: string
   file_location: string
+  client_year: string
   status: ClientStatus
 }
