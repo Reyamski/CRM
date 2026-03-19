@@ -1,84 +1,113 @@
-# HANDOVER
+# HANDOVER — CRM App
+
+**Last updated:** 2026-03-19
+**Handed off by:** Claude (Sonnet 4.6)
+
+---
 
 ## Project
-- Name: `CRM`
-- Path: `c:\Users\cruzr\Downloads\Cursor\CRM`
 
-## What This Is
-A frontend-only clickable broker CRM prototype built for testing UX and workflow, then wrapped in a GSD / AI-team planning structure.
+- **Name:** R Fernandez Services — Client Management Portal
+- **Repo:** https://github.com/Reyamski/CRM
+- **Local path:** `c:\Users\Reyam\Downloads\AI\crm-app`
+- **Live (prod):** https://crm-app-rho-lovat.vercel.app
+- **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4 + Supabase + Vercel
+
+---
 
 ## Current Status
-- Prototype is working and user said it "looks good".
-- No backend or database exists yet.
-- All data is fake/demo-only and stored in frontend state.
-- The project is intentionally not production-ready.
 
-## What Was Built
-- Demo role switching:
-  - Broker / Owner
-  - Admin Assistant
-  - Manager / Compliance
-- Dashboard
-- Searchable client list
-- Client detail panel
-- Add/edit client modal
-- Timestamped notes
-- Masked SIN with role-gated reveal
-- Audit log page
+Production is live and being used by the broker team. Real client data is being entered (10+ active clients as of today).
 
-## Important Decisions
-- Keep this prototype.
-- Do not discard it and restart from scratch.
-- Use this prototype as Phase 01 in the GSD workflow.
-- Future work should continue through `.planning/` and GSD commands.
-- Continue using fake/demo data only.
+### Branches
+- `main` → production (auto-deploys to Vercel on push)
+- `develop` → QA/preview
+- `feature/richer-records-and-user-mgmt` → built, NOT yet merged — needs local QA first
 
-## Planning Files
-- `.planning/PROJECT.md`
-- `.planning/REQUIREMENTS.md`
-- `.planning/ROADMAP.md`
-- `.planning/STATE.md`
-- `.planning/config.json`
-- `.planning/MILESTONES.md`
-- `.planning/phases/01-clickable-crm-prototype/`
+---
 
-## Suggested Next Steps
-Recommended next phase:
-- `Phase 02 - Prototype Refinement`
+## What's Live (main)
 
-Suggested GSD flow:
-```text
-/gsd:discuss-phase 2
-/gsd:plan-phase 2
-/gsd:execute-phase 2
-```
+- Real Supabase auth + RLS + RBAC (3 roles: Broker/Owner, Admin Assistant, Manager/Compliance)
+- Client records: name, DOB, SIN (masked, reveal audited), address, email, phone, marital status, spouse, file location
+- Timestamped notes per client
+- Audit log (role-restricted)
+- Duplicate client detection
+- 30-min idle session timeout
+- Professional dark navy + gold UI — "R Fernandez Services" branding
+- Security headers via vercel.json (CSP, HSTS, X-Frame-Options)
+- GitHub Actions keep-alive ping every 30 mins (pings both REST + auth endpoints)
+
+### Users
+- broker@crm.local / Broker@2026! → Rose Fernandez (Broker / Owner)
+- assistant@crm.local / Assistant@2026! → Admin Assistant
+- manager@crm.local / Manager@2026! → Manager / Compliance
+
+---
+
+## What's on Feature Branch (not merged)
+
+`feature/richer-records-and-user-mgmt` contains:
+- **Option 2:** Additional broker fields — mortgage_type, lender, property_address, loan_amount, rate_expiry_date, referral_source
+- **Option 3:** Password reset flow, My Profile (change name/password), Team management (deactivate/reactivate users)
+- DB migration: `supabase/migration-v2.sql` — must run in Supabase SQL Editor BEFORE testing
+
+**Do NOT merge to main until:**
+1. Run migration-v2.sql in Supabase
+2. Test locally (`npm run dev`)
+3. Test on develop branch
+4. Confirm with user
+
+---
+
+## Known Issues / Recent Fixes
+
+- Supabase JS v2 auth lock bug: stale sessions cause `signInWithPassword` and `signOut` to hang indefinitely. Fixed by directly clearing `sb-owllakjxcihfjrwcwnbh-auth-token` from localStorage before auth operations.
+- Duplicate detection was matching null/empty email+phone as duplicates. Fixed.
+- Keep-alive was only pinging REST endpoint, not auth. Both now pinged.
+
+---
+
+## Important Rules
+
+- **Always test locally before pushing to main** — `npm run dev` at localhost:5173
+- **Never push directly to main for features** — use develop branch → PR → merge
+- Hotfixes may go to main directly but must be tested locally first
+- Run DB migrations in Supabase SQL Editor before testing new schema changes
+- Never hardcode secrets — all in `.env`
+
+---
 
 ## Run Locally
-```powershell
-cd "c:\Users\cruzr\Downloads\Cursor\CRM"
+
+```bash
+cd "c:\Users\Reyam\Downloads\AI\crm-app"
 npm install
 npm run dev
 ```
 
-Open:
-- `http://localhost:5173/`
+Open: http://localhost:5173
 
-## Budget Context
-- User asked whether a real secure CRM could fit within about `500 CAD`.
-- Guidance given: that amount is too low for a true production-ready secure CRM handling sensitive records.
-- Current prototype is acceptable as a low-cost exploration artifact.
+`.env` file needs:
+```
+VITE_SUPABASE_URL=https://owllakjxcihfjrwcwnbh.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key>
+```
 
-## Production Gaps
-- No real authentication
-- No database
-- No persistence
-- No backend validation
-- No encryption
-- No real RBAC enforcement
-- No real audit persistence
-- No deployment hardening
+---
 
-## Safety
-- Do not insert real client data.
-- Do not insert real SINs.
-- Do not treat this repo as production-safe until later secure phases are completed.
+## Supabase
+
+- Project: **CRMBroker** (AWS us-west-2)
+- Size: ~25 MB / 500 MB free tier
+- Free tier pauses after 7 days inactivity (keep-alive prevents this)
+- Schema: `supabase/schema.sql`
+- Security hardening: `supabase/security-fixes.sql`
+
+---
+
+## Next Suggested Work
+
+1. Merge `feature/richer-records-and-user-mgmt` after QA
+2. Mobile responsiveness polish
+3. Password reset + user management (already built on feature branch)
