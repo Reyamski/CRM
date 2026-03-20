@@ -11,11 +11,16 @@ import {
   updateClient as dbUpdateClient,
   addNote as dbAddNote,
   addAuditEntry,
+  getDocuments,
+  uploadDocument,
+  deleteDocument,
+  getDocumentUrl,
 } from './lib/queries'
 import type {
   Profile,
   Client,
   ClientNote,
+  ClientDocument,
   AuditEntry,
   ClientDraft,
   ClientStatus,
@@ -68,8 +73,11 @@ export default function App() {
   // Data state
   const [clients, setClients] = useState<Client[]>([])
   const [notes, setNotes] = useState<ClientNote[]>([])
+  const [documents, setDocuments] = useState<ClientDocument[]>([])
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([])
   const [dataLoading, setDataLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // UI state
   const [activeView, setActiveView] = useState<'dashboard' | 'clients' | 'audit'>('dashboard')
@@ -181,6 +189,7 @@ export default function App() {
   useEffect(() => {
     if (!selectedClientId) return
     getNotes(selectedClientId).then(setNotes)
+    getDocuments(selectedClientId).then(setDocuments)
   }, [selectedClientId])
 
   // ── Load audit log when switching to audit view ───────────
@@ -268,6 +277,38 @@ export default function App() {
     try { localStorage.removeItem('sb-owllakjxcihfjrwcwnbh-auth-token') } catch { /* ignore */ }
     await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
     window.location.reload()
+  }
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!profile || !selectedClientId) return
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 20 * 1024 * 1024) { alert('File too large. Max 20 MB.'); return }
+    setUploading(true)
+    try {
+      const doc = await uploadDocument(selectedClientId, file, profile.id, profile.name)
+      setDocuments((prev) => [doc, ...prev])
+    } catch (err: unknown) {
+      alert('Upload failed: ' + (err instanceof Error ? err.message : 'Unknown error'))
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDeleteDocument = async (doc: ClientDocument) => {
+    if (!confirm(`Delete "${doc.file_name}"?`)) return
+    try {
+      await deleteDocument(doc)
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id))
+    } catch {
+      alert('Failed to delete file.')
+    }
+  }
+
+  const handleDownloadDocument = async (doc: ClientDocument) => {
+    const url = await getDocumentUrl(doc.file_path)
+    if (url) window.open(url, '_blank')
   }
 
   const handleSaveClient = async () => {
@@ -650,6 +691,51 @@ export default function App() {
                       </span>
                     </div>
                   )}
+
+                  <section className="notes-section">
+                    <div className="notes-header">
+                      <h4>Documents</h4>
+                      <div>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          style={{ display: 'none' }}
+                          onChange={handleUploadFile}
+                        />
+                        <button
+                          className="ghost-button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          {uploading ? 'Uploading...' : 'Upload file'}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="note-list">
+                      {documents.length === 0 && (
+                        <div className="muted-text" style={{ padding: '8px 0' }}>No files uploaded yet.</div>
+                      )}
+                      {documents.map((doc) => (
+                        <div key={doc.id} className="note-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <button
+                              className="inline-action"
+                              onClick={() => handleDownloadDocument(doc)}
+                              style={{ fontWeight: 600 }}
+                            >
+                              {doc.file_name}
+                            </button>
+                            <div className="muted-text" style={{ fontSize: '0.75rem', marginTop: 2 }}>
+                              {(doc.file_size / 1024).toFixed(1)} KB · {doc.uploaded_by_name} · {formatDateTime(doc.created_at)}
+                            </div>
+                          </div>
+                          <button className="ghost-button" style={{ color: 'var(--danger, #e05)' }} onClick={() => handleDeleteDocument(doc)}>
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
 
                   <section className="notes-section">
                     <div className="notes-header">

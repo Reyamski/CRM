@@ -49,6 +49,17 @@ export interface ClientNote {
   created_at: string
 }
 
+export interface ClientDocument {
+  id: string
+  client_id: string
+  file_name: string
+  file_path: string
+  file_size: number
+  uploaded_by: string | null
+  uploaded_by_name: string | null
+  created_at: string
+}
+
 export interface AuditEntry {
   id: string
   action: string

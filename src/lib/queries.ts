@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Client, ClientDraft, ClientNote, AuditEntry, Profile } from './types'
+import type { Client, ClientDraft, ClientNote, AuditEntry, Profile, ClientDocument } from './types'
 
 // ── Profile ───────────────────────────────────────────────
 
@@ -136,6 +136,58 @@ export async function updateClient(
   }
 
   return data as Client
+}
+
+// ── Documents ─────────────────────────────────────────────
+
+export async function getDocuments(clientId: string): Promise<ClientDocument[]> {
+  const { data, error } = await supabase
+    .from('client_documents')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as ClientDocument[]
+}
+
+export async function uploadDocument(
+  clientId: string,
+  file: File,
+  userId: string,
+  userName: string
+): Promise<ClientDocument> {
+  const filePath = `${clientId}/${Date.now()}_${file.name}`
+  const { error: uploadError } = await supabase.storage
+    .from('client-documents')
+    .upload(filePath, file)
+  if (uploadError) throw uploadError
+
+  const { data, error } = await supabase
+    .from('client_documents')
+    .insert({
+      client_id: clientId,
+      file_name: file.name,
+      file_path: filePath,
+      file_size: file.size,
+      uploaded_by: userId,
+      uploaded_by_name: userName,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data as ClientDocument
+}
+
+export async function deleteDocument(doc: ClientDocument): Promise<void> {
+  await supabase.storage.from('client-documents').remove([doc.file_path])
+  await supabase.from('client_documents').delete().eq('id', doc.id)
+}
+
+export async function getDocumentUrl(filePath: string): Promise<string> {
+  const { data } = await supabase.storage
+    .from('client-documents')
+    .createSignedUrl(filePath, 60 * 60) // 1 hour
+  return data?.signedUrl ?? ''
 }
 
 // ── Notes ─────────────────────────────────────────────────
